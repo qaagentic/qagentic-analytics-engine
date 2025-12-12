@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "qagentic-analytics-engine"
+version = "0.1.0"
+description = "Analytics engine for the QAagentic platform"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [
+  { name = "QAagentic Team" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn>=0.23.2",
+    "pydantic>=2.4.2",
+    "sqlalchemy>=2.0.22",
+    "asyncpg>=0.28.0",
+    "httpx>=0.24.1",
+    "python-dotenv>=1.0.0",
+    "qagentic-common",
+    "scikit-learn>=1.3.2",
+    "pandas>=2.1.1",
+    "numpy>=1.26.0",
+    "hdbscan>=0.8.33",
+    "sentence-transformers>=2.2.2",
+    "nltk>=3.8.1",
+    "spacy>=3.7.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.2",
+    "pytest-asyncio>=0.21.1",
+    "black>=23.9.1",
+    "isort>=5.12.0",
+    "mypy>=1.5.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["qagentic_analytics"]
+
+[tool.black]
+line-length = 100
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
