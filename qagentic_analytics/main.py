@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from qagentic_common.utils.db import init_db, shutdown_db
 
 from qagentic_analytics.config import get_settings
-from qagentic_analytics.routes import clusters, metrics
+from qagentic_analytics.routes import clusters, metrics, dashboard
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -63,6 +63,7 @@ def create_app() -> FastAPI:
     # Add API routes
     app.include_router(clusters.router, prefix=settings.API_V1_PREFIX)
     app.include_router(metrics.router, prefix=settings.API_V1_PREFIX)
+    app.include_router(dashboard.router, prefix=settings.API_V1_PREFIX)
 
     @app.get("/health")
     async def health_check():
