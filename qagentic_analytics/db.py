@@ -26,17 +26,16 @@ def get_metrics_from_db() -> dict:
         conn = get_connection()
         cur = conn.cursor()
         
-        # Get test run counts and stats from public.test_runs
+        # Get test run counts and stats from gateway tables
         cur.execute("""
             SELECT 
-                COUNT(*) as total_runs,
-                COALESCE(SUM(total_tests), 0) as total_tests,
-                COALESCE(SUM(passed_tests), 0) as passed_tests,
-                COALESCE(SUM(failed_tests), 0) as failed_tests,
-                COALESCE(SUM(skipped_tests), 0) as skipped_tests,
-                COALESCE(SUM(flaky_tests), 0) as flaky_tests,
-                COALESCE(AVG(duration_ms), 0) as avg_duration_ms
-            FROM public.test_runs
+                COUNT(DISTINCT tr.run_id) as total_runs,
+                COUNT(*) as total_tests,
+                SUM(CASE WHEN tr.status = 'passed' THEN 1 ELSE 0 END) as passed_tests,
+                SUM(CASE WHEN tr.status = 'failed' THEN 1 ELSE 0 END) as failed_tests,
+                SUM(CASE WHEN tr.status = 'skipped' THEN 1 ELSE 0 END) as skipped_tests,
+                AVG(tr.duration) as avg_duration_ms
+            FROM qagentic.gateway_test_results tr
         """)
         row = cur.fetchone()
         
@@ -45,29 +44,32 @@ def get_metrics_from_db() -> dict:
         passed_tests = row[2] or 0
         failed_tests = row[3] or 0
         skipped_tests = row[4] or 0
-        flaky_tests = row[5] or 0
-        avg_duration_ms = row[6] or 0
+        avg_duration_ms = (row[5] or 0) * 1000  # Convert seconds to milliseconds
+        
+        # Calculate flaky tests (tests with both passed and failed results)
+        cur.execute("""
+            SELECT COUNT(DISTINCT name) as flaky_count
+            FROM (
+                SELECT name
+                FROM qagentic.gateway_test_results
+                GROUP BY name
+                HAVING COUNT(DISTINCT status) > 1 AND 
+                       SUM(CASE WHEN status = 'passed' THEN 1 ELSE 0 END) > 0 AND
+                       SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) > 0
+            ) flaky_tests
+        """)
+        flaky_row = cur.fetchone()
+        flaky_tests = flaky_row[0] or 0
         
         # Calculate rates
         pass_rate = (passed_tests / total_tests * 100) if total_tests > 0 else 0
         failure_rate = (failed_tests / total_tests * 100) if total_tests > 0 else 0
         flaky_rate = (flaky_tests / total_tests * 100) if total_tests > 0 else 0
         
-        # Get test runs from gateway tables as well
-        cur.execute("""
-            SELECT COUNT(*) as total_runs
-            FROM qagentic.gateway_test_runs
-        """)
-        gateway_row = cur.fetchone()
-        gateway_runs = gateway_row[0] or 0
-        
-        # Combine counts
-        combined_runs = total_runs + gateway_runs
-        
         cur.close()
         
         return {
-            "total_runs": combined_runs,
+            "total_runs": total_runs,
             "total_tests": total_tests,
             "passed_tests": passed_tests,
             "failed_tests": failed_tests,
