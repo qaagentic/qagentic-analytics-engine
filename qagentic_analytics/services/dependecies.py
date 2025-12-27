@@ -9,6 +9,7 @@ from qagentic_analytics.config import Settings, get_settings
 from qagentic_analytics.services.clustering import ClusteringService
 from qagentic_analytics.services.embedding import EmbeddingService
 from qagentic_analytics.services.metrics import MetricsService
+from qagentic_analytics.db import get_engine
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,10 @@ def get_clustering_service(
 def get_metrics_service(settings: Settings = Depends(get_settings)) -> MetricsService:
     """Get the metrics service."""
     logger.debug("Creating metrics service instance")
-    return MetricsService(
+    service = MetricsService(
         enable_flake_detection=settings.ENABLE_FLAKE_DETECTION,
         enable_trend_analysis=settings.ENABLE_TREND_ANALYSIS,
     )
+    # Initialize with database engine
+    service.db = get_engine()
+    return service

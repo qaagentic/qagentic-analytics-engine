@@ -40,9 +40,13 @@ class Settings(BaseSettings):
 
     # Database Settings
     DATABASE_URL: PostgresDsn
-    DATABASE_POOL_SIZE: int = 20
-    DATABASE_MAX_OVERFLOW: int = 10
-    DATABASE_POOL_RECYCLE: int = 1800
+    DB_POOL_SIZE: int = 20
+    DB_MAX_OVERFLOW: int = 10
+    DB_POOL_TIMEOUT: int = 30
+    DB_POOL_RECYCLE: int = 1800
+    DB_STATEMENT_TIMEOUT: int = 30000
+    DB_COMMAND_TIMEOUT: int = 30
+    SQL_DEBUG: bool = False
 
     # Analytics Settings
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"

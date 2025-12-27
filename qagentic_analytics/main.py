@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from qagentic_common.utils.db import init_db, shutdown_db
 
 from qagentic_analytics.config import get_settings
-from qagentic_analytics.routes import clusters, metrics, dashboard
+from qagentic_analytics.routes import clusters, metrics, dashboard, visualization
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -25,9 +25,9 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Initializing Analytics Engine database connections")
     await init_db(settings.DATABASE_URL, 
-                  pool_size=settings.DATABASE_POOL_SIZE,
-                  max_overflow=settings.DATABASE_MAX_OVERFLOW,
-                  pool_recycle=settings.DATABASE_POOL_RECYCLE)
+                  pool_size=settings.DB_POOL_SIZE,
+                  max_overflow=settings.DB_MAX_OVERFLOW,
+                  pool_recycle=settings.DB_POOL_RECYCLE)
     
     # Initialize any models or resources for analytics
     logger.info("Analytics Engine startup complete")
@@ -64,6 +64,7 @@ def create_app() -> FastAPI:
     app.include_router(clusters.router, prefix=settings.API_V1_PREFIX)
     app.include_router(metrics.router, prefix=settings.API_V1_PREFIX)
     app.include_router(dashboard.router, prefix=settings.API_V1_PREFIX)
+    app.include_router(visualization.router)
 
     @app.get("/health")
     async def health_check():
