@@ -12,8 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install pip and dependencies
 RUN pip install --no-cache-dir pip setuptools wheel
 
-# Install qagentic-common
-RUN pip install git+https://github.com/qaagentic/qagentic-common.git
+# Copy and install qagentic-common
+COPY ../qagentic-common /tmp/qagentic-common/
+RUN cd /tmp/qagentic-common && pip install .
 
 # Copy package files
 COPY pyproject.toml README.md ./

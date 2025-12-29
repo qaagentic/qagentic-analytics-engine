@@ -5,7 +5,7 @@ services:
     buildCommand: |
       python -m pip install --upgrade pip setuptools wheel
       pip install "fastapi[all]" "uvicorn[standard]"
-      pip install git+https://github.com/qaagentic/qagentic-common.git
+      cd ../qagentic-common && pip install . && cd ../qagentic-analytics-engine
       pip install .
     startCommand: |
       uvicorn qagentic_analytics.main:app --host 0.0.0.0 --port $PORT --workers 1 --log-level info --proxy-headers --forwarded-allow-ips='*'
