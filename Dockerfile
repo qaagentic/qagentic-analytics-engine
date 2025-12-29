@@ -7,16 +7,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first to leverage Docker cache
-COPY setup.py setup.py
+# Copy package files first to leverage Docker cache
+COPY pyproject.toml pyproject.toml
 COPY README.md README.md
 COPY qagentic_analytics qagentic_analytics
 
-# Install dependencies
-RUN pip install --no-cache-dir -e .
+# Install pip and dependencies
+RUN pip install --no-cache-dir pip setuptools wheel
+RUN pip install --no-cache-dir .[dev]
 
 # Copy rest of the code
 COPY . .
 
 # Run the service in production mode
-CMD ["uvicorn", "qagentic_analytics.main:app", "--host", "0.0.0.0", "--port", "8083", "--workers", "4"]
+CMD ["uvicorn", "qagentic_analytics.main:app", "--host", "0.0.0.0", "--port", "${PORT:-8083}", "--workers", "4"]
