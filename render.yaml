@@ -1,14 +1,13 @@
 services:
   - type: web
     name: qagentic-analytics
-    env: python
+    env: docker
     buildCommand: |
-      python -m pip install --upgrade pip setuptools wheel
-      pip install "fastapi[all]" "uvicorn[standard]"
-      pip install --index-url https://${GITHUB_TOKEN}:@github.com/qaagentic/qagentic-common/raw/main/dist/ qagentic-common
-      pip install .
+      docker build \
+        --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} \
+        -t qagentic-analytics .
     startCommand: |
-      uvicorn qagentic_analytics.main:app --host 0.0.0.0 --port $PORT --workers 1 --log-level info --proxy-headers --forwarded-allow-ips='*'
+      docker run -p $PORT:8083 qagentic-analytics
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0

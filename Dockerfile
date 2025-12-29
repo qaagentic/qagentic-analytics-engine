@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install pip and dependencies
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
+# Configure git to use token
+RUN git config --global credential.helper store
+
 # Install base dependencies first
 RUN pip install "fastapi[all]" "uvicorn[standard]" \
     numpy==1.24.3 \
@@ -26,8 +29,10 @@ RUN pip install "fastapi[all]" "uvicorn[standard]" \
     nltk>=3.8.1 \
     spacy>=3.7.1
 
-# Install qagentic-common from GitHub
-RUN pip install git+https://${GITHUB_TOKEN}@github.com/qaagentic/qagentic-common.git
+# Install qagentic-common from GitHub using token
+ARG GITHUB_TOKEN
+RUN echo "https://oauth2:${GITHUB_TOKEN}@github.com" > ~/.git-credentials && \
+    pip install git+https://github.com/qaagentic/qagentic-common.git
 
 # Copy package files
 COPY pyproject.toml README.md ./
