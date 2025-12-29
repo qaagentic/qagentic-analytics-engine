@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install pip and dependencies
 RUN pip install --no-cache-dir pip setuptools wheel
 
+# Install qagentic-common from PyPI
+RUN pip install --extra-index-url https://pypi.org/simple qagentic-common
+
 # Copy package files
 COPY pyproject.toml README.md ./
 
@@ -29,9 +32,7 @@ ENV PYTHONPATH=/app \
 HEALTHCHECK CMD curl --fail http://localhost:${PORT:-8083}/health || exit 1
 
 # Install package
-RUN --mount=type=secret,id=github_token \
-    GITHUB_TOKEN=$(cat /run/secrets/github_token) \
-    pip install .
+RUN pip install .
 
 # Run the service
 CMD ["uvicorn", "qagentic_analytics.main:app", "--host", "0.0.0.0", "--port", "${PORT:-8083}", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips=*"]
