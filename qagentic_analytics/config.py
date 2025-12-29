@@ -32,10 +32,10 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO")
 
     # CORS Settings
-    ALLOW_ORIGINS: List[str] = Field(default=["http://localhost:3000", "http://localhost:8080"])
-    ALLOW_ORIGIN_REGEX: Optional[str] = None
-    ALLOW_CREDENTIALS: bool = True
-    ALLOW_METHODS: List[str] = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    ALLOW_ORIGINS: List[str] = Field(default_factory=lambda: os.getenv("ALLOW_ORIGINS", "http://localhost:3000,http://localhost:8080").split(","))
+    ALLOW_ORIGIN_REGEX: Optional[str] = Field(default=os.getenv("ALLOW_ORIGIN_REGEX", None))
+    ALLOW_CREDENTIALS: bool = Field(default=os.getenv("ALLOW_CREDENTIALS", "true").lower() == "true")
+    ALLOW_METHODS: List[str] = Field(default_factory=lambda: os.getenv("ALLOW_METHODS", "GET,POST,PUT,DELETE,OPTIONS").split(","))
     ALLOW_HEADERS: List[str] = ["*"]
 
     # Database Settings

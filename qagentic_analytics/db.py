@@ -10,11 +10,14 @@ logger = logging.getLogger(__name__)
 
 def get_connection():
     """Get a database connection using psycopg2."""
-    return psycopg2.connect(
-        host=os.getenv("POSTGRES_HOST", "localhost"),
-        port=int(os.getenv("POSTGRES_PORT", "5432")),
-        user=os.getenv("POSTGRES_USER", "postgres"),
-        password=os.getenv("POSTGRES_PASSWORD", "password"),
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        # Fallback to individual connection parameters if DATABASE_URL is not set
+        return psycopg2.connect(
+            host=os.getenv("POSTGRES_HOST", "db"),  # Changed default from localhost to db
+            port=int(os.getenv("POSTGRES_PORT", "5432")),
+            user=os.getenv("POSTGRES_USER", "postgres"),
+            password=os.getenv("POSTGRES_PASSWORD", "postgres"),
         dbname=os.getenv("POSTGRES_DB", "qagentic"),
     )
 
