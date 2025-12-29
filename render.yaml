@@ -5,7 +5,7 @@ services:
     buildCommand: |
       python -m pip install --upgrade pip setuptools wheel
       pip install "fastapi[all]" "uvicorn[standard]"
-      cd ../qagentic-common && pip install . && cd ../qagentic-analytics-engine
+      pip install --index-url https://${GITHUB_TOKEN}:@github.com/qaagentic/qagentic-common/raw/main/dist/ qagentic-common
       pip install .
     startCommand: |
       uvicorn qagentic_analytics.main:app --host 0.0.0.0 --port $PORT --workers 1 --log-level info --proxy-headers --forwarded-allow-ips='*'
@@ -22,5 +22,7 @@ services:
         value: INFO
       - key: ALLOW_ORIGINS
         value: https://qagentic-ui.onrender.com,https://qagentic-api.onrender.com
+      - key: GITHUB_TOKEN
+        sync: false
     healthCheckPath: /health
     autoDeploy: true
