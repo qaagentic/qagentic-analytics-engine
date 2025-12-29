@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: qagentic-analytics
+    env: python
+    buildCommand: |
+      python -m pip install --upgrade pip setuptools wheel
+      pip install "fastapi[all]" "uvicorn[standard]"
+      pip install git+https://github.com/qaagentic/qagentic-common.git
+      pip install .
+    startCommand: |
+      uvicorn qagentic_analytics.main:app --host 0.0.0.0 --port $PORT --workers 1 --log-level info --proxy-headers --forwarded-allow-ips='*'
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: PYTHONPATH
+        value: /opt/render/project/src
+      - key: DATABASE_URL
+        value: postgresql://qagentic_admin:HpYSuu4dp3D5or3SnJ95aO2v2dc6IVyG@dpg-d597r93e5dus73ebsqk0-a/qagentic
+      - key: DEBUG
+        value: false
+      - key: LOG_LEVEL
+        value: INFO
+      - key: ALLOW_ORIGINS
+        value: https://qagentic-ui.onrender.com,https://qagentic-api.onrender.com
+    healthCheckPath: /health
+    autoDeploy: true
