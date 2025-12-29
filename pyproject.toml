@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "qagentic-analytics-engine"
@@ -10,10 +10,6 @@ readme = "README.md"
 requires-python = ">=3.8"
 authors = [
   { name = "QAagentic Team" },
-]
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Operating System :: OS Independent",
 ]
 dependencies = [
     "fastapi>=0.104.0",
@@ -32,6 +28,11 @@ dependencies = [
     "nltk>=3.8.1",
     "spacy>=3.7.1",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["qagentic_analytics*"]
+exclude = ["tests*"]
 
 [project.optional-dependencies]
 dev = [

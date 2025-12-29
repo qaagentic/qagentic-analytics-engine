@@ -12,10 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install pip and dependencies
 RUN pip install --no-cache-dir pip setuptools wheel
 
-# Install qagentic-common from PyPI
-RUN pip install --extra-index-url https://pypi.org/simple qagentic-common
-
-# Copy package files
+# Copy package files first
 COPY pyproject.toml README.md ./
 
 # Copy application code
@@ -26,13 +23,17 @@ RUN mkdir -p /app/data
 
 # Set environment variables
 ENV PYTHONPATH=/app \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    API_HOST=0.0.0.0 \
+    API_PORT=8083
 
 # Health check
-HEALTHCHECK CMD curl --fail http://localhost:${PORT:-8083}/health || exit 1
+HEALTHCHECK CMD curl --fail http://localhost:${API_PORT}/health || exit 1
 
-# Install package
-RUN pip install .
+# Install package and dependencies
+RUN pip install . && \
+    pip install "fastapi[all]" "uvicorn[standard]" && \
+    pip install --index-url https://${GITHUB_TOKEN}@github.com/qaagentic/qagentic-common/raw/main/dist/ qagentic-common
 
 # Run the service
-CMD ["uvicorn", "qagentic_analytics.main:app", "--host", "0.0.0.0", "--port", "${PORT:-8083}", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips=*"]
+CMD ["uvicorn", "qagentic_analytics.main:app", "--host", "${API_HOST}", "--port", "${API_PORT}", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips=*"]
