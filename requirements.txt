@@ -1,3 +1,4 @@
+qagentic-common @ https://qagentic-package.onrender.com/qagentic_common-0.1.0-py3-none-any.whl
 fastapi[all]>=0.104.0
 uvicorn[standard]>=0.23.2
 pydantic>=2.4.2

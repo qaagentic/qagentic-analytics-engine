@@ -1,21 +1,13 @@
 services:
   - type: web
     name: qagentic-analytics
-    env: python
+    runtime: python
+    plan: free
     buildCommand: |
-      # Build qagentic-common wheel
-      cd ../qagentic-common
-      pip install build
-      python -m build --wheel
-      cp dist/*.whl ../qagentic-analytics-engine/dist/
-      cd ../qagentic-analytics-engine
-      
-      # Install dependencies
-      pip install -r requirements.txt
-      pip install dist/*.whl
-      pip install .
+      python -m pip install --upgrade pip
+      python -m pip install -r requirements.txt
     startCommand: |
-      uvicorn qagentic_analytics.main:app --host 0.0.0.0 --port $PORT --workers 1
+      gunicorn qagentic_analytics.main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
@@ -24,8 +16,14 @@ services:
       - key: DEBUG
         value: false
       - key: LOG_LEVEL
-        value: INFO
+        value: info
       - key: ALLOW_ORIGINS
         value: https://qagentic-ui.onrender.com,https://qagentic-api.onrender.com
+      - key: PYTHONPATH
+        value: .
+      - key: MAX_WORKERS
+        value: 1
+      - key: WEB_CONCURRENCY
+        value: 1
     healthCheckPath: /health
     autoDeploy: true
