@@ -1,18 +1,24 @@
 services:
   - type: web
     name: qagentic-analytics
-    env: docker
+    env: python
     buildCommand: |
-      docker build \
-        --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} \
-        -t qagentic-analytics .
+      # Build qagentic-common wheel
+      cd ../qagentic-common
+      pip install build
+      python -m build --wheel
+      cp dist/*.whl ../qagentic-analytics-engine/dist/
+      cd ../qagentic-analytics-engine
+      
+      # Install dependencies
+      pip install -r requirements.txt
+      pip install dist/*.whl
+      pip install .
     startCommand: |
-      docker run -p $PORT:8083 qagentic-analytics
+      uvicorn qagentic_analytics.main:app --host 0.0.0.0 --port $PORT --workers 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.0
-      - key: PYTHONPATH
-        value: /opt/render/project/src
       - key: DATABASE_URL
         value: postgresql://qagentic_admin:HpYSuu4dp3D5or3SnJ95aO2v2dc6IVyG@dpg-d597r93e5dus73ebsqk0-a/qagentic
       - key: DEBUG
@@ -21,7 +27,5 @@ services:
         value: INFO
       - key: ALLOW_ORIGINS
         value: https://qagentic-ui.onrender.com,https://qagentic-api.onrender.com
-      - key: GITHUB_TOKEN
-        sync: false
     healthCheckPath: /health
     autoDeploy: true
