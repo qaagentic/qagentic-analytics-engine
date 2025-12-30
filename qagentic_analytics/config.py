@@ -32,11 +32,19 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO")
 
     # CORS Settings
-    ALLOW_ORIGINS: List[str] = Field(default_factory=lambda: os.getenv("ALLOW_ORIGINS", "http://localhost:3000,http://localhost:8080").split(","))
-    ALLOW_ORIGIN_REGEX: Optional[str] = Field(default=os.getenv("ALLOW_ORIGIN_REGEX", None))
-    ALLOW_CREDENTIALS: bool = Field(default=os.getenv("ALLOW_CREDENTIALS", "true").lower() == "true")
-    ALLOW_METHODS: List[str] = Field(default_factory=lambda: os.getenv("ALLOW_METHODS", "GET,POST,PUT,DELETE,OPTIONS").split(","))
+    ALLOW_ORIGINS: List[str] = Field(default_factory=list)
+    ALLOW_ORIGIN_REGEX: Optional[str] = None
+    ALLOW_CREDENTIALS: bool = True
+    ALLOW_METHODS: List[str] = Field(default=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     ALLOW_HEADERS: List[str] = ["*"]
+
+    @field_validator("ALLOW_ORIGINS", mode="before")
+    @classmethod
+    def validate_allow_origins(cls, v):
+        if not v:  # If empty list (default)
+            origins = os.getenv("ALLOW_ORIGINS", "http://localhost:3000")
+            return origins.split(",") if "," in origins else [origins]
+        return v
 
     # Database Settings
     DATABASE_URL: PostgresDsn
