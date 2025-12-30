@@ -3,7 +3,7 @@
 import logging
 import os
 from functools import lru_cache
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import AnyHttpUrl, Field, PostgresDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -32,15 +32,20 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field(default="INFO")
 
     # CORS Settings
-    ALLOW_ORIGINS: str = Field(default="http://localhost:3000")
+    ALLOW_ORIGINS: Union[str, List[str]] = Field(default="http://localhost:3000")
     ALLOW_ORIGIN_REGEX: Optional[str] = None
     ALLOW_CREDENTIALS: bool = True
     ALLOW_METHODS: List[str] = Field(default=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
     ALLOW_HEADERS: List[str] = ["*"]
 
-    @property
-    def cors_origins(self) -> List[str]:
-        return [origin.strip() for origin in self.ALLOW_ORIGINS.split(",")]
+    @field_validator("ALLOW_ORIGINS", mode="before")
+    @classmethod
+    def validate_allow_origins(cls, v) -> List[str]:
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",")]
+        if isinstance(v, list):
+            return [str(origin).strip() for origin in v]
+        return ["http://localhost:3000"]  # fallback
 
     # Database Settings
     DATABASE_URL: PostgresDsn
