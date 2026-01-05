@@ -57,6 +57,16 @@ class Settings(BaseSettings):
     DB_COMMAND_TIMEOUT: int = 30
     SQL_DEBUG: bool = False
 
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def convert_to_async_db_url(cls, v):
+        """Convert PostgreSQL URL to async driver URL."""
+        if isinstance(v, str):
+            # Convert postgresql:// to postgresql+asyncpg://
+            if v.startswith("postgresql://"):
+                return v.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return v
+
     # Analytics Settings
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
     CLUSTERING_ALGORITHM: str = "hdbscan"
@@ -68,14 +78,6 @@ class Settings(BaseSettings):
     ENABLE_FLAKE_DETECTION: bool = True
     ENABLE_ROOT_CAUSE_ANALYSIS: bool = True
     ENABLE_TREND_ANALYSIS: bool = True
-    
-    @field_validator("ALLOW_ORIGINS", mode="before")
-    @classmethod
-    def parse_allow_origins(cls, v):
-        """Parse ALLOW_ORIGINS from comma-separated string."""
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        return v
 
     @field_validator("LOG_LEVEL", mode="after")
     @classmethod
